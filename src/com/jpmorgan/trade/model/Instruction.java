@@ -4,6 +4,7 @@ import com.jpmorgan.trade.constants.Currency;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Created by dn86vid on 22/08/2019.
@@ -113,4 +114,23 @@ public class Instruction implements Serializable {
                 + ", pricePerUnit=" + pricePerUnit + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Instruction)) return false;
+        Instruction that = (Instruction) o;
+        return Double.compare(that.getAgreedFx(), getAgreedFx()) == 0 &&
+                getUnits() == that.getUnits() &&
+                Double.compare(that.getPricePerUnit(), getPricePerUnit()) == 0 &&
+                getEntity().equals(that.getEntity()) &&
+                getType().equals(that.getType()) &&
+                getCurrency() == that.getCurrency() &&
+                getInstructionDate().equals(that.getInstructionDate()) &&
+                getSettlementDate().equals(that.getSettlementDate());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getEntity(), getType(), getAgreedFx(), getCurrency(), getInstructionDate(), getSettlementDate(), getUnits(), getPricePerUnit());
+    }
 }

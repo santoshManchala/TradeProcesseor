@@ -3,6 +3,7 @@ package com.jpmorgan.trade.service;
 import com.jpmorgan.trade.constants.Currency;
 import com.jpmorgan.trade.model.Instruction;
 import com.jpmorgan.trade.repository.InstructionRepository;
+import com.jpmorgan.trade.repository.InstructionRepositoryImpl;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -16,6 +17,15 @@ import java.util.stream.Collectors;
  * Created by dn86vid on 22/08/2019.
  */
 public class TradeService {
+    private InstructionRepository instructionRepository;
+    public TradeService() {
+
+        instructionRepository = new InstructionRepositoryImpl();
+    }
+    public TradeService(InstructionRepository instructionRepository) {
+
+        this.instructionRepository = instructionRepository;
+    }
 
     private static DecimalFormat df = new DecimalFormat("0.00");
 
@@ -25,23 +35,22 @@ public class TradeService {
      * @param type
      */
 
-    public void prepareDayReport(String type){
-        Map<LocalDate, Double> map = getDayWiseCalculation(type);
-        displayDayWiseReport(map,type);
+    public Map<LocalDate, Double> prepareDayReport(String type){
+        return getDayWiseCalculation(type);
     }
 
     /**
      * This method will take type parameter as input (Buy/Sell)
      * delegates the responsibility of calculation and Printing
      */
-    public void prepareRankingReport(String type) {
+    public LinkedHashMap<String, Double> prepareRankingReport(String type) {
         Map<String, Double> map = getEntityWiseCalculation(type);
 
-        LinkedHashMap<String, Double> collect = map.entrySet().stream()
+        return  map.entrySet().stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue()
                         .reversed())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
-        displayRankingReport(collect,type);
+
 
     }
 
@@ -54,7 +63,6 @@ public class TradeService {
      */
     private Map<LocalDate, Double> getDayWiseCalculation(String type) {
 
-        InstructionRepository instructionRepository = new InstructionRepository();
         List<Instruction> instructions = instructionRepository.getInstructions();
 
         instructions.forEach(instruction -> {
@@ -92,7 +100,6 @@ public class TradeService {
 
     private Map<String, Double> getEntityWiseCalculation(String type) {
 
-        InstructionRepository instructionRepository = new InstructionRepository();
         List<Instruction> instructions = instructionRepository.getInstructions();
 
         instructions.forEach(instruction -> {
@@ -132,7 +139,7 @@ public class TradeService {
      * @param map,type
      */
 
-    private void displayDayWiseReport(Map<LocalDate, Double> map, String type){
+    public void displayDayWiseReport(Map<LocalDate, Double> map, String type){
         System.out.println("***** Daywise settled Amount in USD for "+type+" ***** ");
         map.forEach((date, amount) -> {
             System.out.println("Date:" + date.format(DateTimeFormatter.ofPattern("dd MMM yyyy")) + " and amount $" + df.format(amount));
@@ -147,7 +154,7 @@ public class TradeService {
      * @param map,type
      */
 
-    private void displayRankingReport(Map<String, Double> map, String type) {
+    public void displayRankingReport(Map<String, Double> map, String type) {
         System.out.println("***** Entity Ranking report on highest "+type+" Amount ****** ");
         map.forEach((entity,amount)->System.out.println(entity+ "  $"+ df.format(amount)));
         System.out.println("*************************************************\n");
